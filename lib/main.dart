@@ -1,4 +1,9 @@
+import 'package:auto_injector/auto_injector.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+final autoInjector = AutoInjector();
+final DateFormat dateFormat = DateFormat("dd/MM/yyyy");
 
 void main() {
   runApp(const MyApp());
