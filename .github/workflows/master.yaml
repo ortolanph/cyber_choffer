@@ -1,0 +1,81 @@
+name: Cyber Choffer Master Workflow
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    name: version
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+      - run: flutter --version
+  build_windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.7.8'
+      - run: flutter pub get
+      - run: flutter pub run build_runner build -d
+      - run: flutter build windows
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Windows_Binary
+          path: build\windows\runner\Release\
+          retention-days: 5
+          if-no-files-found: warn
+  build_android:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v2
+      with:
+        distribution: 'zulu'
+        java-version: '11'
+    - uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        flutter-version: '3.7.8'
+    - run: flutter pub get
+    - run: flutter pub run build_runner build -d
+    - run: flutter build apk
+    - run: flutter build appbundle
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android_APK
+        path: build/app/outputs/flutter-apk/app-release.apk
+        retention-days: 5
+        if-no-files-found: warn
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Android_AAB
+        path: build/app/outputs/bundle/release/app-release.aab
+        retention-days: 5
+        if-no-files-found: warn
+  build_ios:
+    needs: version
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        flutter-version: '3.7.8'
+        architecture: x64
+    - run: flutter pub get
+    - run: flutter pub run build_runner build -d
+    - run: flutter build ios --release --no-codesign
+    - uses: actions/upload-artifact@v3
+      with:
+        name: iOS_Binary
+        path: /Users/runner/work/cyber_choffer/cyber_choffer/build/ios/iphoneos/Runner.app
+        retention-days: 5
+        if-no-files-found: warn
